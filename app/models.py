@@ -16,7 +16,7 @@ class LoanCreate(BaseModel):
     amount: float = Field(..., gt=0, example=5000.0)
     annual_interest_rate: float = Field(..., gt=0, example=0.05)
     loan_term_months: int = Field(..., gt=0, example=12)
-    user_id: UUID
+    owner_id: UUID
 
 class Loan(BaseModel):
     id: UUID
