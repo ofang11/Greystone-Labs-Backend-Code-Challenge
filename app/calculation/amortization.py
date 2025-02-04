@@ -42,8 +42,8 @@ def generate_amortization_schedule(loan: Loan) -> List[LoanScheduleItem]:
 
 # Calculating loan summary for month: Interest payment, principal payment, remaining loan balance
 def get_loan_summary_for_month(loan: Loan, month: int) -> LoanSummary:
-    if month < 1 or month > loan.loan_term_months:
-        raise ValueError(f"Month {month} out of valid range [1..{loan.loan_term_months}].")
+    if month < 0 or month > loan.loan_term_months:
+        raise ValueError(f"Month {month} out of valid range [0..{loan.loan_term_months}].")
 
     monthly_payment = calculate_monthly_payment(loan.amount, loan.annual_interest_rate, loan.loan_term_months)
     monthly_interest_rate = loan.annual_interest_rate / 12
@@ -51,12 +51,18 @@ def get_loan_summary_for_month(loan: Loan, month: int) -> LoanSummary:
     total_interest_paid = 0.0
     remaining = loan.amount
 
-    for m in range(1, month + 1):
+    for _ in range(month):
+        if remaining <= 0:
+            break
         interest_for_month = remaining * monthly_interest_rate
         principal_for_month = monthly_payment - interest_for_month
+
+        if principal_for_month > remaining:
+            principal_for_month = remaining
         total_interest_paid += interest_for_month
         total_principal_paid += principal_for_month
         remaining -= principal_for_month
+        
         if remaining < 0:
             remaining = 0
 

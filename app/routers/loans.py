@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, HTTPException, Query
 
 from app.models import (
-    LoanCreate, Loan, LoanScheduleItem, LoanSummary
+    LoanCreate, Loan, LoanScheduleItem, LoanSummary, LoanShareRequest
 )
 from app.db import loans_db, users_db, user_loans_map
 from app.calculation.amortization import (
@@ -20,6 +20,8 @@ def create_loan(loan_in: LoanCreate):
         raise HTTPException(status_code=404, detail="User not found")
     if loan_in.amount <= 0:
         raise HTTPException(status_code=422, detail="Loan Amount most be positive")
+    if loan_in.annual_interest_rate < 0:
+        raise HTTPException(status_code=422, detail="Annual interest rate cannot be negative")
         
     new_id = uuid4()
     loan = Loan(id=new_id, 
@@ -30,6 +32,7 @@ def create_loan(loan_in: LoanCreate):
     loans_db[new_id] = loan
     user_loans_map[loan.owner_id].add(loan.id)
     return loan
+
 # GET an existing loan
 @router.get("/{loan_id}", response_model=Loan, summary="Fetch an existing loan")
 def get_loan(loan_id: UUID):
@@ -37,6 +40,7 @@ def get_loan(loan_id: UUID):
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
     return loan
+
 # GET all existing loans
 @router.get("/", response_model=List[Loan], summary="Fetch all existing loans")
 def get_all_loans():
@@ -58,3 +62,15 @@ def get_loan_summary(loan_id: UUID, month: int = Query(..., gt=0, lt=13)):
         raise HTTPException(status_code=404, detail="Loan not found")
     return get_loan_summary_for_month(loan, month)
 
+@router.post("/{loan_id}/share")
+def share_loan(loan_id: UUID, request: LoanShareRequest):
+    loan = loans_db.get(loan_id)
+    if not loan:
+        raise HTTPException(status_code=404, detail="Loan not found")
+    if request.other_user_id not in users_db:
+        raise HTTPException(status_code=404, detail="User to share with not found")
+
+    if request.other_user_id not in loan.shared_with:
+        loan.shared_with.append(request.other_user_id)
+    user_loans_map[request.other_user_id].add(loan_id)
+    return {"status": "success", "shared_with": loan.shared_with}

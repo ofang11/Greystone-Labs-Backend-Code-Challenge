@@ -36,3 +36,6 @@ class LoanSummary(BaseModel):
     current_principal_balance: float
     total_principal_paid: float
     total_interest_paid: float
+
+class LoanShareRequest(BaseModel):
+    other_user_id: UUID
