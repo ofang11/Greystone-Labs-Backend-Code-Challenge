@@ -2,7 +2,7 @@
 Greystone Labs Backend Code Challenge 2025
 # Loan Amortization API 
 
-This is a **FastAPI-based Loan Amortization API** that allows users to:
+**FastAPI-based Loan Amortization API** that allows users to:
 -  **Create a user**
 -  **Create a loan**
 -  **Fetch a loan schedule (amortization table)**
