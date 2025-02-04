@@ -1,7 +1,7 @@
 # app/db.py
 
 from sqlmodel import SQLModel, Session, create_engine
-from app.models import User, Loan
+from app.models import User, Loan, LoanShare
 
 DATABASE_URL = "sqlite:///database.db"  
 

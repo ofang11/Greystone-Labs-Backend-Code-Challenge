@@ -2,7 +2,7 @@ from uuid import uuid4, UUID
 from typing import List
 from fastapi import APIRouter, HTTPException, Query, Depends
 from app.db import get_session
-from app.models import (LoanCreate, Loan, LoanScheduleItem, LoanSummary, LoanShareRequest, User)
+from app.models import (LoanCreate, Loan, LoanScheduleItem, LoanSummary, LoanShareRequest, User, LoanShare)
 from sqlmodel import Session, select
 import json
 from app.calculation.amortization import (generate_amortization_schedule, get_loan_summary_for_month)
@@ -44,6 +44,8 @@ def get_loan(loan_id: UUID, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Loan not found")
     return loan
 
+
+
 # GET loan amortization schedule
 @router.get("/{loan_id}/schedule", response_model=list[LoanScheduleItem], summary="Fetch loan schedule")
 def get_loan_schedule(loan_id: UUID, session: Session = Depends(get_session)):
@@ -77,10 +79,13 @@ def share_loan(loan_id: UUID, request: LoanShareRequest, session: Session = Depe
     if not other_user:
         raise HTTPException(status_code=404, detail="User to share with not found")
 
-    if str(request.other_user_id) not in loan.shared_with:
-        loan.shared_with.append(str(request.other_user_id))
-        session.add(loan)
+    existing_share = session.exec(
+        select(LoanShare).where((LoanShare.loan_id == loan_id) & (LoanShare.user_id == request.other_user_id))
+    ).first()
+    
+    if not existing_share:
+        loan_share = LoanShare(loan_id=loan_id, user_id=request.other_user_id)
+        session.add(loan_share)
         session.commit()
-        session.refresh(loan)
 
-    return {"status": "success", "shared_with": loan.shared_with}
+    return {"status": "success"}

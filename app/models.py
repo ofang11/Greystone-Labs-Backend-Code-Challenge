@@ -3,7 +3,7 @@ from typing import Any, List, Optional
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from sqlalchemy import JSON, String
-from sqlmodel import SQLModel, Field, Column
+from sqlmodel import SQLModel, Field, Column, Relationship
 from sqlalchemy.ext.mutable import MutableList
 
 
@@ -34,8 +34,13 @@ class Loan(SQLModel, table=True):
     annual_interest_rate: float
     loan_term_months: int
     owner_id: UUID  
-    shared_with: Optional[List[str]] = Field(default_factory=list, sa_column=Column(MutableList.as_mutable(JSON)))
+    shared_with: List["LoanShare"] = Relationship(back_populates="loan")
 
+class LoanShare(SQLModel, table=True):
+    loan_id: UUID = Field(foreign_key="loan.id", primary_key=True)
+    user_id: UUID = Field(foreign_key="user.id", primary_key=True)
+
+    loan: Loan = Relationship(back_populates="shared_with")
 
 class LoanScheduleItem(BaseModel):
     month: int
