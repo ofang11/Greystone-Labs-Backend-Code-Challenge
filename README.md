@@ -17,4 +17,4 @@ Greystone Labs Backend Code Challenge 2025
 - **Loan amortization calculations**
 - **Relationship-based loan sharing**
 
-Dependencies in requirements.txt
+** Dependencies in requirements.txt**
