@@ -16,5 +16,6 @@ Greystone Labs Backend Code Challenge 2025
 - **SQLAlchemy ORM** for structured data access
 - **Loan amortization calculations**
 - **Relationship-based loan sharing**
+- **API Endpoint Testing/Validation done through Postman**
 
 ** Dependencies in requirements.txt**
